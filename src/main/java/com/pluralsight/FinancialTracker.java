@@ -1,8 +1,6 @@
 package com.pluralsight;
 
-import java.io.File;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Scanner;
@@ -38,9 +36,9 @@ public class FinancialTracker {
         loadTransactions(FILE_NAME);
 
         Scanner scanner = new Scanner(System.in);
-        boolean running = true;
+        boolean isRunning = true;
 
-        while (running) {
+        while (isRunning) {
             System.out.println("Welcome to TransactionApp");
             System.out.println("Choose an option:");
             System.out.println("D) Add Deposit");
@@ -54,7 +52,7 @@ public class FinancialTracker {
                 case "D" -> addDeposit(scanner);
                 case "P" -> addPayment(scanner);
                 case "L" -> ledgerMenu(scanner);
-                case "X" -> running = false;
+                case "X" -> isRunning = false;
                 default -> System.out.println("Invalid option");
             }
         }
@@ -103,8 +101,8 @@ public class FinancialTracker {
        Ledger menu
        ------------------------------------------------------------------ */
     private static void ledgerMenu(Scanner scanner) {
-        boolean running = true;
-        while (running) {
+        boolean isRunning = true;
+        while (isRunning) {
             System.out.println("Ledger");
             System.out.println("Choose an option:");
             System.out.println("A) All");
@@ -120,7 +118,7 @@ public class FinancialTracker {
                 case "D" -> displayDeposits();
                 case "P" -> displayPayments();
                 case "R" -> reportsMenu(scanner);
-                case "H" -> running = false;
+                case "H" -> isRunning = false;
                 default -> System.out.println("Invalid option");
             }
         }
@@ -139,8 +137,8 @@ public class FinancialTracker {
        Reports menu
        ------------------------------------------------------------------ */
     private static void reportsMenu(Scanner scanner) {
-        boolean running = true;
-        while (running) {
+        boolean isRunning = true;
+        while (isRunning) {
             System.out.println("Reports");
             System.out.println("Choose an option:");
             System.out.println("1) Month To Date");
@@ -160,7 +158,7 @@ public class FinancialTracker {
                 case "4" -> {/* TODO – previous year report  */ }
                 case "5" -> {/* TODO – prompt for vendor then report */ }
                 case "6" -> customSearch(scanner);
-                case "0" -> running = false;
+                case "0" -> isRunning = false;
                 default -> System.out.println("Invalid option");
             }
         }
