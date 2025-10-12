@@ -63,18 +63,16 @@ public class FinancialTracker {
                     // Error message necessary?
                     continue;
                 }
-
-                LocalDate date = LocalDate.parse(parts[0]);
-                LocalTime time = LocalTime.parse(parts[1]);
+                LocalDate date = parseDate(parts[0]);
+                LocalTime time = parseTime(parts[1]);
                 String description = parts[2];
                 String vendor = parts[3];
-                Double amount = Double.parseDouble(parts[4]);
+                Double amount = parseDouble(parts[4]);
 
                 if (date == null || time == null || amount == null) {
                     // Error message necessary?
                     continue;
                 }
-
                 transactions.add(new Transaction(date, time, description, vendor, amount));
             }
             reader.close();
@@ -177,13 +175,28 @@ public class FinancialTracker {
         //        vendor, and exact amount, then display matches
     }
 
+
     private static LocalDate parseDate(String s) {
-        /* TODO – return LocalDate or null */
-        return null;
+        try {
+            return LocalDate.parse(s);
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    private static LocalTime parseTime(String s) {
+        try {
+            return LocalTime.parse(s);
+        } catch (Exception ex) {
+            return null;
+        }
     }
 
     private static Double parseDouble(String s) {
-        /* TODO – return Double   or null */
-        return null;
+        try {
+            return Double.parseDouble(s);
+        } catch (Exception ex) {
+            return null;
+        }
     }
 }
