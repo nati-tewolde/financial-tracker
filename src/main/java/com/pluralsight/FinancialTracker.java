@@ -88,15 +88,20 @@ public class FinancialTracker {
             BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_NAME, true));
             // PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(FILE_NAME, true)));
 
-            System.out.print("Enter transaction date & time to begin adding deposit (yyyy-MM-dd HH:mm:ss): ");
+            System.out.print("Enter transaction date & time to begin adding deposit (yyyy-MM-dd HH:mm:ss), enter N to set it to the current time: ");
             String dateTime = scanner.nextLine();
 
             LocalDate date;
             LocalTime time;
             try {
+                if(dateTime.equalsIgnoreCase("n")) {
+                    date = LocalDate.now();
+                    time = LocalTime.now();
+                } else {
                     String[] dateTimeParts = dateTime.split(" ");
                     date = LocalDate.parse(dateTimeParts[0]);
                     time = LocalTime.parse(dateTimeParts[1]);
+                }
             } catch (DateTimeParseException ex) {
                 System.err.println("Invalid transaction date/time format, please use yyyy-MM-dd HH:mm:ss.");
                 return;
