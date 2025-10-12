@@ -1,12 +1,12 @@
 package com.pluralsight;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+import java.time.DateTimeException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
@@ -70,6 +70,7 @@ public class FinancialTracker {
                 Double amount = parseDouble(parts[4]);
 
                 if (date == null || time == null || amount == null) {
+                    // Add description & vendor as empty string?
                     // Error message necessary?
                     continue;
                 }
@@ -77,24 +78,63 @@ public class FinancialTracker {
             }
             reader.close();
         } catch (IOException ex) {
-            System.err.println("Error reading file.");
+            System.err.println("Error reading file: " + ex.getMessage());
         }
     }
 
 
     private static void addDeposit(Scanner scanner) {
-        /*
-         * Prompt for ONE date+time string in the format
-         * "yyyy-MM-dd HH:mm:ss", plus description, vendor, amount.
-         * Validate that the amount entered is positive.
-         * Store the amount as-is (positive) and append to the file.
-         */
-    }
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_NAME, true));
+            // PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(FILE_NAME, true)));
 
+            System.out.print("Enter transaction date & time to begin adding deposit (yyyy-MM-dd HH:mm:ss): ");
+            String dateTime = scanner.nextLine();
+
+            LocalDate date;
+            LocalTime time;
+            try {
+                    String[] dateTimeParts = dateTime.split(" ");
+                    date = LocalDate.parse(dateTimeParts[0]);
+                    time = LocalTime.parse(dateTimeParts[1]);
+            } catch (DateTimeParseException ex) {
+                System.err.println("Invalid transaction date/time format, please use yyyy-MM-dd HH:mm:ss.");
+                return;
+            }
+
+            System.out.print("\nEnter deposit description: ");
+            String description = scanner.nextLine();
+
+            System.out.print("\nEnter deposit vendor: ");
+            String vendor = scanner.nextLine();
+
+            System.out.print("\nEnter deposit amount: ");
+            // Double amount = parseDouble(scanner.nextLine());
+            double amount = scanner.nextDouble();
+            scanner.nextLine();
+
+            if (amount < 0) {
+                System.err.println("Deposit amounts must be greater than 0.");
+                return;
+            }
+
+            transactions.add(new Transaction(date, time, description, vendor, amount));
+
+            writer.write(date + "|" + time + "|" + description + "|" + vendor + "|" + amount + "\n");
+            // writer.printf("")
+
+            System.out.println("You have successfully added your deposit");
+
+            writer.close();
+
+        } catch (Exception ex) {
+            System.err.println("Error: " + ex.getMessage());
+        }
+    }
 
     private static void addPayment(Scanner scanner) {
         /*
-         * Same prompts as addDeposit.
+         * Same prompts as addDeposit - ADD HELPER METHOD FOR BOTH METHODS
          * Amount must be entered as a positive number,
          * then converted to a negative amount before storing.
          */
