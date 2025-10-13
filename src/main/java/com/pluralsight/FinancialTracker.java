@@ -1,9 +1,7 @@
 package com.pluralsight;
 
 import java.io.*;
-import java.time.DateTimeException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -30,7 +28,7 @@ public class FinancialTracker {
 
         while (isRunning) {
             System.out.println("Welcome to TransactionApp");
-            System.out.println("Choose an option:");
+            System.out.println("Choose an option: ");
             System.out.println("D) Add Deposit");
             System.out.println("P) Make Payment (Debit)");
             System.out.println("L) Ledger");
@@ -88,7 +86,7 @@ public class FinancialTracker {
             BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_NAME, true));
             // PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(FILE_NAME, true)));
 
-            System.out.print("Enter transaction date & time to begin adding deposit (yyyy-MM-dd HH:mm:ss), enter N to set it to the current time: ");
+            System.out.print("Enter transaction date & time to begin adding deposit (yyyy-MM-dd HH:mm:ss), enter N to set it to the current date/time: ");
             String dateTime = scanner.nextLine();
 
             LocalDate date;
@@ -103,7 +101,7 @@ public class FinancialTracker {
                     time = LocalTime.parse(dateTimeParts[1]);
                 }
             } catch (DateTimeParseException ex) {
-                System.err.println("Invalid transaction date/time format, please use yyyy-MM-dd HH:mm:ss.");
+                System.out.println("\nInvalid transaction date/time format, please use yyyy-MM-dd HH:mm:ss.\n");
                 return;
             }
 
@@ -119,32 +117,76 @@ public class FinancialTracker {
             scanner.nextLine();
 
             if (amount < 0) {
-                System.err.println("Deposit amounts must be greater than 0.");
+                System.out.println("\nEntered transaction amounts must be greater than $0.\n");
                 return;
             }
 
             transactions.add(new Transaction(date, time, description, vendor, amount));
 
-            writer.write(date + "|" + time + "|" + description + "|" + vendor + "|" + amount + "\n");
+            writer.write(date.format(DATE_FMT) + "|" + time.format(TIME_FMT) + "|" + description + "|" + vendor + "|" + amount + "\n");
             // writer.printf("")
 
-            System.out.println("You have successfully added your deposit");
+            System.out.println("\nYou have successfully added your deposit!\n");
 
             writer.close();
 
         } catch (Exception ex) {
-            System.err.println("Error: " + ex.getMessage());
+            System.out.println("\nError: " + ex.getMessage() + "\n");
         }
     }
 
     private static void addPayment(Scanner scanner) {
-        /*
-         * Same prompts as addDeposit - ADD HELPER METHOD FOR BOTH METHODS
-         * Amount must be entered as a positive number,
-         * then converted to a negative amount before storing.
-         */
-    }
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_NAME, true));
 
+            System.out.print("Enter transaction date & time to begin adding payment (yyyy-MM-dd HH:mm:ss), enter N to set it to the current date/time: ");
+            String dateTime = scanner.nextLine();
+
+            LocalDate date;
+            LocalTime time;
+            try {
+                if(dateTime.equalsIgnoreCase("n")) {
+                    date = LocalDate.now();
+                    time = LocalTime.now();
+                } else {
+                    String[] dateTimeParts = dateTime.split(" ");
+                    date = LocalDate.parse(dateTimeParts[0]);
+                    time = LocalTime.parse(dateTimeParts[1]);
+                }
+            } catch (DateTimeParseException ex) {
+                System.out.println("\nInvalid transaction date/time format, please use yyyy-MM-dd HH:mm:ss.\n");
+                return;
+            }
+
+            System.out.print("\nEnter payment description: ");
+            String description = scanner.nextLine();
+
+            System.out.print("\nEnter payment vendor: ");
+            String vendor = scanner.nextLine();
+
+            System.out.print("\nEnter payment amount: ");
+            double amount = scanner.nextDouble();
+            scanner.nextLine();
+
+            if (amount < 0) {
+                System.out.println("\nEntered transaction amounts must be greater than $0.\n");
+                return;
+            }
+
+            amount = -amount;
+
+            transactions.add(new Transaction(date, time, description, vendor, amount));
+
+            writer.write(date.format(DATE_FMT) + "|" + time.format(TIME_FMT) + "|" + description + "|" + vendor + "|" + amount + "\n");
+
+            System.out.println("\nYou have successfully added your payment!\n");
+
+            writer.close();
+
+        } catch (Exception ex) {
+            System.out.println("\nError: " + ex.getMessage() + "\n");
+        }
+    }
 
     private static void ledgerMenu(Scanner scanner) {
         boolean isRunning = true;
@@ -220,6 +262,7 @@ public class FinancialTracker {
         //        vendor, and exact amount, then display matches
     }
 
+    // Add helper method for addDeposit & addPayment
 
     private static LocalDate parseDate(String s) {
         try {
