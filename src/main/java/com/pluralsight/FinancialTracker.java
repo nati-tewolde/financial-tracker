@@ -6,7 +6,6 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Scanner;
 
@@ -62,6 +61,7 @@ public class FinancialTracker {
                 if (parts.length != 5) {
                     continue;
                 }
+
                 LocalDate date = parseDate(parts[0]);
                 LocalTime time = parseTime(parts[1]);
                 String description = parts[2];
@@ -69,14 +69,16 @@ public class FinancialTracker {
                 Double amount = parseDouble(parts[4]);
 
                 if (date == null || time == null || amount == null) {
+                    // Is condition redundant (parsing exception is already handled)?
                     // Check for empty description/vendor values?
                     continue;
                 }
+
                 transactions.add(new Transaction(date, time, description, vendor, amount));
             }
             reader.close();
-        } catch (IOException ex) {
-            System.err.println("Error reading file: " + ex.getMessage());
+        } catch (Exception ex) {
+            System.err.println("Error reading file.");
         }
     }
 
@@ -113,24 +115,27 @@ public class FinancialTracker {
     }
 
     private static void displayLedger() {
-        /*Comparator<Transaction> comparator = Comparator.comparing(Transaction::getDate,
-                Comparator.reverseOrder()).thenComparing(Transaction::getTime, Comparator.reverseOrder());*/
-
-        transactions.sort(Comparator.comparing(Transaction::getDate,
-                Comparator.reverseOrder()).thenComparing(Transaction::getTime, Comparator.reverseOrder()));
+        // Dynamically scale column width based on length of description and vendor?
+        transactions.sort(Comparator.comparing(Transaction::getDate)
+                .thenComparing(Transaction::getTime)
+                .reversed());
 
         if (transactions.isEmpty()) {
             System.out.println("Ledger is currently empty.");
         } else {
+            System.out.printf("%n%-10s | %-8s | %-30s | %-20s | %10s%n",
+                    "Date", "Time", "Description", "Vendor", "Amount");
+            System.out.println("-".repeat(90));
+
             for (Transaction transaction : transactions) {
-                /*System.out.println(transaction);*/
-                System.out.printf("%s | %s | %s | %s | %.2f%n",
-                        transaction.getDate(),
-                        transaction.getTime(),
+                System.out.printf("%-10s | %-7s | %-30s | %-20s | %10.2f%n",
+                        transaction.getDate().format(DATE_FMT),
+                        transaction.getTime().format(TIME_FMT),
                         transaction.getDescription(),
                         transaction.getVendor(),
                         transaction.getAmount());
             }
+            System.out.println();
         }
     }
 
@@ -184,7 +189,7 @@ public class FinancialTracker {
     private static void addTransaction(Scanner scanner, boolean isPayment, String transactionType) {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_NAME, true));
-            // Making payment vs Adding payment?
+            // Pass second string to differentiate between Making payment vs Adding payment?
             System.out.print("Enter transaction date & time to begin adding " + transactionType + " (yyyy-MM-dd HH:mm:ss), enter N to set it to the current date/time: ");
             String dateTime = scanner.nextLine();
 
@@ -224,10 +229,10 @@ public class FinancialTracker {
             writer.write(date.format(DATE_FMT) + "|" + time.format(TIME_FMT) + "|" + description + "|" + vendor + "|" + amount + "\n");
 
             System.out.println("\nYou have successfully added your " + transactionType + ".\n");
-            writer.close();
 
+            writer.close();
         } catch (Exception ex) {
-            System.out.println("\nError: " + ex.getMessage() + "\n");
+            System.out.println("\nError: invalid input and/or reading file.\n"); //Nest try/catch so catch error message is more specific?
         }
     }
 
