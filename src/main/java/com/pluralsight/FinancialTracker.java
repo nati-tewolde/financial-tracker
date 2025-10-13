@@ -6,6 +6,8 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Scanner;
 
 public class FinancialTracker {
@@ -78,7 +80,6 @@ public class FinancialTracker {
         }
     }
 
-
     private static void addDeposit(Scanner scanner) {
         addTransaction(scanner, false, "deposit");
     }
@@ -86,7 +87,6 @@ public class FinancialTracker {
     private static void addPayment(Scanner scanner) {
         addTransaction(scanner, true, "payment");
     }
-
 
     private static void ledgerMenu(Scanner scanner) {
         boolean isRunning = true;
@@ -112,8 +112,27 @@ public class FinancialTracker {
         }
     }
 
+    private static void displayLedger() {
+        /*Comparator<Transaction> comparator = Comparator.comparing(Transaction::getDate,
+                Comparator.reverseOrder()).thenComparing(Transaction::getTime, Comparator.reverseOrder());*/
 
-    private static void displayLedger() { /* TODO – print all transactions in column format */ }
+        transactions.sort(Comparator.comparing(Transaction::getDate,
+                Comparator.reverseOrder()).thenComparing(Transaction::getTime, Comparator.reverseOrder()));
+
+        if (transactions.isEmpty()) {
+            System.out.println("Ledger is currently empty.");
+        } else {
+            for (Transaction transaction : transactions) {
+                /*System.out.println(transaction);*/
+                System.out.printf("%s | %s | %s | %s | %.2f%n",
+                        transaction.getDate(),
+                        transaction.getTime(),
+                        transaction.getDescription(),
+                        transaction.getVendor(),
+                        transaction.getAmount());
+            }
+        }
+    }
 
     private static void displayDeposits() { /* TODO – only amount > 0               */ }
 
@@ -165,7 +184,7 @@ public class FinancialTracker {
     private static void addTransaction(Scanner scanner, boolean isPayment, String transactionType) {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_NAME, true));
-
+            // Making payment vs Adding payment?
             System.out.print("Enter transaction date & time to begin adding " + transactionType + " (yyyy-MM-dd HH:mm:ss), enter N to set it to the current date/time: ");
             String dateTime = scanner.nextLine();
 
