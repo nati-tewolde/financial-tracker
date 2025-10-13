@@ -58,7 +58,6 @@ public class FinancialTracker {
             while ((line = reader.readLine()) != null) {
                 String[] parts = line.split("\\|");
                 if (parts.length != 5) {
-                    // Error message necessary?
                     continue;
                 }
                 LocalDate date = parseDate(parts[0]);
@@ -68,8 +67,7 @@ public class FinancialTracker {
                 Double amount = parseDouble(parts[4]);
 
                 if (date == null || time == null || amount == null) {
-                    // Add description & vendor as empty string?
-                    // Error message necessary?
+                    // Check for empty description/vendor values?
                     continue;
                 }
                 transactions.add(new Transaction(date, time, description, vendor, amount));
@@ -82,111 +80,13 @@ public class FinancialTracker {
 
 
     private static void addDeposit(Scanner scanner) {
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_NAME, true));
-            // PrintWriter writer = new PrintWriter(new BufferedWriter(new FileWriter(FILE_NAME, true)));
-
-            System.out.print("Enter transaction date & time to begin adding deposit (yyyy-MM-dd HH:mm:ss), enter N to set it to the current date/time: ");
-            String dateTime = scanner.nextLine();
-
-            LocalDate date;
-            LocalTime time;
-            try {
-                if(dateTime.equalsIgnoreCase("n")) {
-                    date = LocalDate.now();
-                    time = LocalTime.now();
-                } else {
-                    String[] dateTimeParts = dateTime.split(" ");
-                    date = LocalDate.parse(dateTimeParts[0]);
-                    time = LocalTime.parse(dateTimeParts[1]);
-                }
-            } catch (DateTimeParseException ex) {
-                System.out.println("\nInvalid transaction date/time format, please use yyyy-MM-dd HH:mm:ss.\n");
-                return;
-            }
-
-            System.out.print("\nEnter deposit description: ");
-            String description = scanner.nextLine();
-
-            System.out.print("\nEnter deposit vendor: ");
-            String vendor = scanner.nextLine();
-
-            System.out.print("\nEnter deposit amount: ");
-            // Double amount = parseDouble(scanner.nextLine());
-            double amount = scanner.nextDouble();
-            scanner.nextLine();
-
-            if (amount < 0) {
-                System.out.println("\nEntered transaction amounts must be greater than $0.\n");
-                return;
-            }
-
-            transactions.add(new Transaction(date, time, description, vendor, amount));
-
-            writer.write(date.format(DATE_FMT) + "|" + time.format(TIME_FMT) + "|" + description + "|" + vendor + "|" + amount + "\n");
-            // writer.printf("")
-
-            System.out.println("\nYou have successfully added your deposit!\n");
-
-            writer.close();
-
-        } catch (Exception ex) {
-            System.out.println("\nError: " + ex.getMessage() + "\n");
-        }
+        addTransaction(scanner, false, "deposit");
     }
 
     private static void addPayment(Scanner scanner) {
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_NAME, true));
-
-            System.out.print("Enter transaction date & time to begin adding payment (yyyy-MM-dd HH:mm:ss), enter N to set it to the current date/time: ");
-            String dateTime = scanner.nextLine();
-
-            LocalDate date;
-            LocalTime time;
-            try {
-                if(dateTime.equalsIgnoreCase("n")) {
-                    date = LocalDate.now();
-                    time = LocalTime.now();
-                } else {
-                    String[] dateTimeParts = dateTime.split(" ");
-                    date = LocalDate.parse(dateTimeParts[0]);
-                    time = LocalTime.parse(dateTimeParts[1]);
-                }
-            } catch (DateTimeParseException ex) {
-                System.out.println("\nInvalid transaction date/time format, please use yyyy-MM-dd HH:mm:ss.\n");
-                return;
-            }
-
-            System.out.print("\nEnter payment description: ");
-            String description = scanner.nextLine();
-
-            System.out.print("\nEnter payment vendor: ");
-            String vendor = scanner.nextLine();
-
-            System.out.print("\nEnter payment amount: ");
-            double amount = scanner.nextDouble();
-            scanner.nextLine();
-
-            if (amount < 0) {
-                System.out.println("\nEntered transaction amounts must be greater than $0.\n");
-                return;
-            }
-
-            amount = -amount;
-
-            transactions.add(new Transaction(date, time, description, vendor, amount));
-
-            writer.write(date.format(DATE_FMT) + "|" + time.format(TIME_FMT) + "|" + description + "|" + vendor + "|" + amount + "\n");
-
-            System.out.println("\nYou have successfully added your payment!\n");
-
-            writer.close();
-
-        } catch (Exception ex) {
-            System.out.println("\nError: " + ex.getMessage() + "\n");
-        }
+        addTransaction(scanner, true, "payment");
     }
+
 
     private static void ledgerMenu(Scanner scanner) {
         boolean isRunning = true;
@@ -207,7 +107,7 @@ public class FinancialTracker {
                 case "P" -> displayPayments();
                 case "R" -> reportsMenu(scanner);
                 case "H" -> isRunning = false;
-                default -> System.out.println("Invalid option");
+                default -> System.out.println("\nInvalid option.\n");
             }
         }
     }
@@ -262,7 +162,55 @@ public class FinancialTracker {
         //        vendor, and exact amount, then display matches
     }
 
-    // Add helper method for addDeposit & addPayment
+    private static void addTransaction(Scanner scanner, boolean isPayment, String transactionType) {
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_NAME, true));
+
+            System.out.print("Enter transaction date & time to begin adding " + transactionType + " (yyyy-MM-dd HH:mm:ss), enter N to set it to the current date/time: ");
+            String dateTime = scanner.nextLine();
+
+            LocalDate date;
+            LocalTime time;
+            try {
+                if (dateTime.equalsIgnoreCase("n")) {
+                    date = LocalDate.now();
+                    time = LocalTime.now();
+                } else {
+                    String[] dateTimeParts = dateTime.split(" ");
+                    date = LocalDate.parse(dateTimeParts[0]);
+                    time = LocalTime.parse(dateTimeParts[1]);
+                }
+            } catch (DateTimeParseException ex) {
+                System.out.println("\nInvalid transaction date/time format, please use yyyy-MM-dd HH:mm:ss.\n");
+                return;
+            }
+            System.out.print("\nEnter " + transactionType + " description: ");
+            String description = scanner.nextLine();
+
+            System.out.print("\nEnter " + transactionType + " vendor: ");
+            String vendor = scanner.nextLine();
+
+            System.out.print("\nEnter " + transactionType + " amount: ");
+            double amount = scanner.nextDouble();
+            scanner.nextLine();
+
+            if (amount < 0) {
+                System.out.println("\nEntered " + transactionType + " amounts must be greater than $0.\n");
+                return;
+            }
+            if (isPayment) {
+                amount = -amount;
+            }
+            transactions.add(new Transaction(date, time, description, vendor, amount));
+            writer.write(date.format(DATE_FMT) + "|" + time.format(TIME_FMT) + "|" + description + "|" + vendor + "|" + amount + "\n");
+
+            System.out.println("\nYou have successfully added your " + transactionType + ".\n");
+            writer.close();
+
+        } catch (Exception ex) {
+            System.out.println("\nError: " + ex.getMessage() + "\n");
+        }
+    }
 
     private static LocalDate parseDate(String s) {
         try {
