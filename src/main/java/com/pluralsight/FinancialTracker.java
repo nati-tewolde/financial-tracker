@@ -149,7 +149,15 @@ public class FinancialTracker {
                 case "3" -> filterTransactionsByDate(LocalDate.now().withDayOfYear(1), LocalDate.now(), "year-to-date");
                 case "4" -> filterTransactionsByDate(LocalDate.now().minusYears(1).withDayOfYear(1),
                         LocalDate.now().withDayOfYear(1).minusDays(1), "previous-year");
-                case "5" -> {/* TODO – prompt for vendor then report */ }
+                case "5" -> {
+                    System.out.print("\nEnter vendor name to filter transactions by vendor: ");
+                    String vendor = scanner.nextLine();
+                    if (vendor.isEmpty()) {
+                        System.out.println("\nVendor name cannot be empty.");
+                        break;
+                    }
+                    filterTransactionsByVendor(vendor.trim());
+                }
                 case "6" -> customSearch(scanner);
                 case "0" -> isRunning = false;
                 default -> System.out.println("Invalid option");
@@ -163,6 +171,11 @@ public class FinancialTracker {
                 .thenComparing(Transaction::getTime)
                 .reversed());
 
+        if (transactions.isEmpty()) {
+            System.out.println("Report is currently empty.");
+            return;
+        }
+
         switch (displayType.toLowerCase()) {
             case "month-to-date":
                 System.out.printf("%50s%n", "--Month To Date Report--");
@@ -175,11 +188,6 @@ public class FinancialTracker {
                 break;
             default:
                 System.out.printf("%50s%n", "--Previous Year Report--");
-        }
-
-        if (transactions.isEmpty()) {
-            System.out.println("Report is currently empty.");
-            return;
         }
 
         System.out.printf("%n%-10s | %-8s | %-30s | %-20s | %10s%n",
@@ -206,7 +214,37 @@ public class FinancialTracker {
     }
 
     private static void filterTransactionsByVendor(String vendor) {
-        // TODO – iterate transactions, print those with matching vendor
+        transactions.sort(Comparator.comparing(Transaction::getDate)
+                .thenComparing(Transaction::getTime)
+                .reversed());
+
+        if (transactions.isEmpty()) {
+            System.out.println("Report is currently empty.");
+            return;
+        }
+
+        System.out.printf("%n%50s%n", "--Transactions by Vendor--");
+
+        System.out.printf("%n%-10s | %-8s | %-30s | %-20s | %10s%n",
+                "Date", "Time", "Description", "Vendor", "Amount");
+        System.out.println("-".repeat(90));
+
+        vendor = vendor.trim();
+        boolean isFound = false;
+        for (Transaction transaction : transactions) {
+            if (transaction.getVendor().equalsIgnoreCase(vendor)) {
+                System.out.printf("%-10s | %-7s | %-30s | %-20s | %10.2f%n",
+                        transaction.getDate().format(DATE_FMT),
+                        transaction.getTime().format(TIME_FMT),
+                        transaction.getDescription(),
+                        transaction.getVendor(),
+                        transaction.getAmount());
+                isFound = true;
+            }
+        }
+        if (!isFound) {
+            System.out.print("No transactions found for vendor: " + vendor + "\n");
+        }
     }
 
     private static void customSearch(Scanner scanner) {
@@ -309,6 +347,10 @@ public class FinancialTracker {
                     transaction.getAmount());
         }
         System.out.println();
+    }
+
+    private static void filterTransaction() {
+        // TODO - refactor filter date/vendor methods, passing
     }
 
     private static LocalDate parseDate(String s) {
