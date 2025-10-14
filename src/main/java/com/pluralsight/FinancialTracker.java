@@ -143,12 +143,26 @@ public class FinancialTracker {
             String input = scanner.nextLine().trim();
 
             switch (input) {
-                case "1" -> filterTransactionsByDate(LocalDate.now().withDayOfMonth(1), LocalDate.now(), "month-to-date");
-                case "2" -> filterTransactionsByDate(LocalDate.now().minusMonths(1).withDayOfMonth(1),
-                        LocalDate.now().withDayOfMonth(1).minusDays(1), "previous-month");
-                case "3" -> filterTransactionsByDate(LocalDate.now().withDayOfYear(1), LocalDate.now(), "year-to-date");
-                case "4" -> filterTransactionsByDate(LocalDate.now().minusYears(1).withDayOfYear(1),
-                        LocalDate.now().withDayOfYear(1).minusDays(1), "previous-year");
+                case "1" -> {
+                    LocalDate start = LocalDate.now().withDayOfMonth(1);
+                    LocalDate end = LocalDate.now();
+                    filterTransactionsByDate(start, end, "month-to-date");
+                }
+                case "2" -> {
+                    LocalDate start = LocalDate.now().minusMonths(1).withDayOfMonth(1);
+                    LocalDate end = LocalDate.now().withDayOfMonth(1).minusDays(1);
+                    filterTransactionsByDate(start, end, "previous-month");
+                }
+                case "3" -> {
+                    LocalDate start = LocalDate.now().withDayOfYear(1);
+                    LocalDate end = LocalDate.now();
+                    filterTransactionsByDate(start, end, "year-to-date");
+                }
+                case "4" -> {
+                    LocalDate start = LocalDate.now().minusYears(1).withDayOfYear(1);
+                    LocalDate end = LocalDate.now().withDayOfYear(1).minusDays(1);
+                    filterTransactionsByDate(start, end, "previous-year");
+                }
                 case "5" -> {
                     System.out.print("\nEnter vendor name to filter transactions by vendor: ");
                     String vendor = scanner.nextLine();
@@ -165,86 +179,12 @@ public class FinancialTracker {
         }
     }
 
-
     private static void filterTransactionsByDate(LocalDate start, LocalDate end, String displayType) {
-        transactions.sort(Comparator.comparing(Transaction::getDate)
-                .thenComparing(Transaction::getTime)
-                .reversed());
-
-        if (transactions.isEmpty()) {
-            System.out.println("Report is currently empty.");
-            return;
-        }
-
-        switch (displayType.toLowerCase()) {
-            case "month-to-date":
-                System.out.printf("%50s%n", "--Month To Date Report--");
-                break;
-            case "previous-month":
-                System.out.printf("%50s%n", "--Previous Month Report--");
-                break;
-            case "year-to-date":
-                System.out.printf("%50s%n", "--Year To Date Report--");
-                break;
-            default:
-                System.out.printf("%50s%n", "--Previous Year Report--");
-        }
-
-        System.out.printf("%n%-10s | %-8s | %-30s | %-20s | %10s%n",
-                "Date", "Time", "Description", "Vendor", "Amount");
-        System.out.println("-".repeat(90));
-
-        boolean isFound = false;
-        for (Transaction transaction : transactions) {
-            LocalDate date = transaction.getDate();
-            if ((date.isAfter(start) || date.isEqual(start))
-                    && (date.isBefore(end) || date.isEqual(end))) {
-                System.out.printf("%-10s | %-7s | %-30s | %-20s | %10.2f%n",
-                        transaction.getDate().format(DATE_FMT),
-                        transaction.getTime().format(TIME_FMT),
-                        transaction.getDescription(),
-                        transaction.getVendor(),
-                        transaction.getAmount());
-                isFound = true;
-            }
-        }
-        if (!isFound) {
-            System.out.print("No transactions found in this date range\n");
-        }
+        filterTransaction("date", start, end, null, displayType);
     }
 
     private static void filterTransactionsByVendor(String vendor) {
-        transactions.sort(Comparator.comparing(Transaction::getDate)
-                .thenComparing(Transaction::getTime)
-                .reversed());
-
-        if (transactions.isEmpty()) {
-            System.out.println("Report is currently empty.");
-            return;
-        }
-
-        System.out.printf("%n%50s%n", "--Transactions by Vendor--");
-
-        System.out.printf("%n%-10s | %-8s | %-30s | %-20s | %10s%n",
-                "Date", "Time", "Description", "Vendor", "Amount");
-        System.out.println("-".repeat(90));
-
-        vendor = vendor.trim();
-        boolean isFound = false;
-        for (Transaction transaction : transactions) {
-            if (transaction.getVendor().equalsIgnoreCase(vendor)) {
-                System.out.printf("%-10s | %-7s | %-30s | %-20s | %10.2f%n",
-                        transaction.getDate().format(DATE_FMT),
-                        transaction.getTime().format(TIME_FMT),
-                        transaction.getDescription(),
-                        transaction.getVendor(),
-                        transaction.getAmount());
-                isFound = true;
-            }
-        }
-        if (!isFound) {
-            System.out.print("No transactions found for vendor: " + vendor + "\n");
-        }
+        filterTransaction("vendor", null, null, vendor, "vendor");
     }
 
     private static void customSearch(Scanner scanner) {
@@ -349,8 +289,68 @@ public class FinancialTracker {
         System.out.println();
     }
 
-    private static void filterTransaction() {
-        // TODO - refactor filter date/vendor methods, passing
+    private static void filterTransaction(String filterType, LocalDate start, LocalDate end, String vendor, String displayType) {
+        transactions.sort(Comparator.comparing(Transaction::getDate)
+                .thenComparing(Transaction::getTime)
+                .reversed());
+
+        switch (displayType.toLowerCase()) {
+            case "month-to-date":
+                System.out.printf("%50s%n", "--Month To Date Report--");
+                break;
+            case "previous-month":
+                System.out.printf("%50s%n", "--Previous Month Report--");
+                break;
+            case "year-to-date":
+                System.out.printf("%50s%n", "--Year To Date Report--");
+                break;
+            case "previous-year":
+                System.out.printf("%50s%n", "--Previous Year Report--");
+                break;
+            default:
+                System.out.printf("%n%50s%n", "--Transactions by Vendor--");
+                break;
+        }
+
+        if (transactions.isEmpty()) {
+            System.out.println("There are currently no transactions in the ledger.");
+            return;
+        }
+
+        System.out.printf("%n%-10s | %-8s | %-30s | %-20s | %10s%n",
+                "Date", "Time", "Description", "Vendor", "Amount");
+        System.out.println("-".repeat(90));
+
+        // Refactor to switch case and refactor getters in conditions
+        boolean isFound = false;
+        for (Transaction transaction : transactions) {
+            LocalDate date = transaction.getDate();
+            if (filterType.equalsIgnoreCase("date")) {
+                if ((date.isAfter(start) || date.isEqual(start))
+                        && (date.isBefore(end) || date.isEqual(end))) {
+                    System.out.printf("%-10s | %-7s | %-30s | %-20s | %10.2f%n",
+                            transaction.getDate().format(DATE_FMT),
+                            transaction.getTime().format(TIME_FMT),
+                            transaction.getDescription(),
+                            transaction.getVendor(),
+                            transaction.getAmount());
+                    isFound = true;
+                }
+            } else if (filterType.equalsIgnoreCase("vendor")) {
+                if (transaction.getVendor().equalsIgnoreCase(vendor.trim())) {
+                    System.out.printf("%-10s | %-7s | %-30s | %-20s | %10.2f%n",
+                            transaction.getDate().format(DATE_FMT),
+                            transaction.getTime().format(TIME_FMT),
+                            transaction.getDescription(),
+                            transaction.getVendor(),
+                            transaction.getAmount());
+                    isFound = true;
+                }
+            }
+        }
+        if (!isFound) {
+            System.out.print("No transactions found for specified filter\n");
+        }
     }
 
     private static LocalDate parseDate(String s) {
