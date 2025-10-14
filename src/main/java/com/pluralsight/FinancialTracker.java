@@ -115,33 +115,16 @@ public class FinancialTracker {
     }
 
     private static void displayLedger() {
-        // Dynamically scale column width based on length of description and vendor?
-        transactions.sort(Comparator.comparing(Transaction::getDate)
-                .thenComparing(Transaction::getTime)
-                .reversed());
-
-        if (transactions.isEmpty()) {
-            System.out.println("Ledger is currently empty.");
-        } else {
-            System.out.printf("%n%-10s | %-8s | %-30s | %-20s | %10s%n",
-                    "Date", "Time", "Description", "Vendor", "Amount");
-            System.out.println("-".repeat(90));
-
-            for (Transaction transaction : transactions) {
-                System.out.printf("%-10s | %-7s | %-30s | %-20s | %10.2f%n",
-                        transaction.getDate().format(DATE_FMT),
-                        transaction.getTime().format(TIME_FMT),
-                        transaction.getDescription(),
-                        transaction.getVendor(),
-                        transaction.getAmount());
-            }
-            System.out.println();
-        }
+        displayTransaction("all");
     }
 
-    private static void displayDeposits() { /* TODO – only amount > 0               */ }
+    private static void displayDeposits() {
+        displayTransaction("deposit");
+    }
 
-    private static void displayPayments() { /* TODO – only amount < 0               */ }
+    private static void displayPayments() {
+        displayTransaction("payment");
+    }
 
 
     private static void reportsMenu(Scanner scanner) {
@@ -233,6 +216,47 @@ public class FinancialTracker {
             writer.close();
         } catch (Exception ex) {
             System.out.println("\nError: invalid input and/or reading file.\n"); //Nest try/catch so catch error message is more specific?
+        }
+    }
+
+    private static void displayTransaction(String displayType) {
+        // Dynamically scale column width based on length of description and vendor?
+        transactions.sort(Comparator.comparing(Transaction::getDate)
+                .thenComparing(Transaction::getTime)
+                .reversed());
+
+        if (displayType.equalsIgnoreCase("all")) {
+            System.out.println("                                --All Transactions--");
+        }
+        if (displayType.equalsIgnoreCase("deposit")) {
+            System.out.println("                                     --Deposits--");
+        }
+        if (displayType.equalsIgnoreCase("payment")) {
+            System.out.println("                                     --Payments--");
+        }
+
+        if (transactions.isEmpty()) {
+            System.out.println("Ledger is currently empty.");
+        } else {
+            System.out.printf("%n%-10s | %-8s | %-30s | %-20s | %10s%n",
+                    "Date", "Time", "Description", "Vendor", "Amount");
+            System.out.println("-".repeat(90));
+
+            for (Transaction transaction : transactions) {
+                if (transaction.getAmount() <= 0 && displayType.equalsIgnoreCase("deposit")) {
+                    continue;
+                }
+                if (transaction.getAmount() >= 0 && displayType.equalsIgnoreCase("payment")) {
+                    continue;
+                }
+                System.out.printf("%-10s | %-7s | %-30s | %-20s | %10.2f%n",
+                        transaction.getDate().format(DATE_FMT),
+                        transaction.getTime().format(TIME_FMT),
+                        transaction.getDescription(),
+                        transaction.getVendor(),
+                        transaction.getAmount());
+            }
+            System.out.println();
         }
     }
 
