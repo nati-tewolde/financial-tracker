@@ -225,39 +225,45 @@ public class FinancialTracker {
                 .thenComparing(Transaction::getTime)
                 .reversed());
 
-        if (displayType.equalsIgnoreCase("all")) {
-            System.out.println("                                --All Transactions--");
-        }
-        if (displayType.equalsIgnoreCase("deposit")) {
-            System.out.println("                                     --Deposits--");
-        }
-        if (displayType.equalsIgnoreCase("payment")) {
-            System.out.println("                                     --Payments--");
+        switch (displayType.toLowerCase()) {
+            case "deposit":
+                System.out.printf("%50s%n", "--Deposits--");
+                break;
+            case "payment":
+                System.out.printf("%50s%n", "--Payments--");
+                break;
+            default:
+                System.out.printf("%50s%n", "--All Transactions--");
         }
 
         if (transactions.isEmpty()) {
             System.out.println("Ledger is currently empty.");
-        } else {
-            System.out.printf("%n%-10s | %-8s | %-30s | %-20s | %10s%n",
-                    "Date", "Time", "Description", "Vendor", "Amount");
-            System.out.println("-".repeat(90));
-
-            for (Transaction transaction : transactions) {
-                if (transaction.getAmount() <= 0 && displayType.equalsIgnoreCase("deposit")) {
-                    continue;
-                }
-                if (transaction.getAmount() >= 0 && displayType.equalsIgnoreCase("payment")) {
-                    continue;
-                }
-                System.out.printf("%-10s | %-7s | %-30s | %-20s | %10.2f%n",
-                        transaction.getDate().format(DATE_FMT),
-                        transaction.getTime().format(TIME_FMT),
-                        transaction.getDescription(),
-                        transaction.getVendor(),
-                        transaction.getAmount());
-            }
-            System.out.println();
+            return;
         }
+
+        System.out.printf("%n%-10s | %-8s | %-30s | %-20s | %10s%n",
+                "Date", "Time", "Description", "Vendor", "Amount");
+        System.out.println("-".repeat(90));
+
+        for (Transaction transaction : transactions) {
+            boolean isDeposit = transaction.getAmount() > 0;
+            boolean isPayment = transaction.getAmount() < 0;
+
+            if (displayType.equalsIgnoreCase("deposit") && !isDeposit) {
+                continue;
+            }
+            if (displayType.equalsIgnoreCase("payment") && !isPayment) {
+                continue;
+            }
+
+            System.out.printf("%-10s | %-7s | %-30s | %-20s | %10.2f%n",
+                    transaction.getDate().format(DATE_FMT),
+                    transaction.getTime().format(TIME_FMT),
+                    transaction.getDescription(),
+                    transaction.getVendor(),
+                    transaction.getAmount());
+        }
+        System.out.println();
     }
 
     private static LocalDate parseDate(String s) {
