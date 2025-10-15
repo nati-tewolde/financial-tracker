@@ -7,6 +7,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class FinancialTracker {
@@ -42,14 +43,19 @@ public class FinancialTracker {
                 case "P" -> addPayment(scanner);
                 case "L" -> ledgerMenu(scanner);
                 case "X" -> isRunning = false;
-                default -> System.out.println("Invalid option");
+                default -> System.out.println("\nInvalid option");
             }
         }
         scanner.close();
     }
 
+    /**
+     * Reads file line-by-line, parsing and storing each field into a new transaction
+     *
+     */
     public static void loadTransactions(String fileName) {
         try {
+            // Creates new file object if file isn't found in path
             File file = new File(fileName);
             if (!file.exists()) {
                 file.createNewFile();
@@ -58,22 +64,20 @@ public class FinancialTracker {
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] parts = line.split("\\|");
+
                 if (parts.length != 5) {
                     continue;
                 }
 
-                // Not wrap utility parsers in try/catch?
-                LocalDate date = parseDate(parts[0]);
-                LocalTime time = parseTime(parts[1]);
+                LocalDate date = LocalDate.parse(parts[0]);
+                LocalTime time = LocalTime.parse(parts[1]);
                 String description = parts[2];
                 String vendor = parts[3];
-                Double amount = parseDouble(parts[4]);
+                double amount = Double.parseDouble(parts[4]);
 
-                if (date == null || time == null || amount == null) {
-                    // Is condition redundant (parsing exception is already handled)?
-                    // Check for empty description/vendor values?
+                /*if (date == null || time == null || amount == null) {
                     continue;
-                }
+                }*/
 
                 transactions.add(new Transaction(date, time, description, vendor, amount));
             }
@@ -83,14 +87,26 @@ public class FinancialTracker {
         }
     }
 
+    /**
+     * Method description
+     *
+     */
     private static void addDeposit(Scanner scanner) {
         addTransaction(scanner, false, "deposit");
     }
 
+    /**
+     * Method description
+     *
+     */
     private static void addPayment(Scanner scanner) {
         addTransaction(scanner, true, "payment");
     }
 
+    /**
+     * Method description
+     *
+     */
     private static void ledgerMenu(Scanner scanner) {
         boolean isRunning = true;
         while (isRunning) {
@@ -115,6 +131,10 @@ public class FinancialTracker {
         }
     }
 
+    /**
+     * Method description
+     *
+     */
     private static void displayLedger() {
         if (transactions.isEmpty()) {
             System.out.println("No transactions available.");
@@ -125,16 +145,15 @@ public class FinancialTracker {
         displayLedgerTable("--All Transactions--");
 
         for (Transaction transaction : transactions) {
-            System.out.printf("%-10s | %-7s | %-30s | %-20s | %10.2f%n",
-                    transaction.getDate().format(DATE_FMT),
-                    transaction.getTime().format(TIME_FMT),
-                    transaction.getDescription(),
-                    transaction.getVendor(),
-                    transaction.getAmount());
+            printTransaction(transaction);
         }
         System.out.println();
     }
 
+    /**
+     * Method description
+     *
+     */
     private static void displayDeposits() {
         if (transactions.isEmpty()) {
             System.out.println("No transactions available.");
@@ -146,17 +165,16 @@ public class FinancialTracker {
 
         for (Transaction transaction : transactions) {
             if (transaction.getAmount() > 0) {
-                System.out.printf("%-10s | %-7s | %-30s | %-20s | %10.2f%n",
-                        transaction.getDate().format(DATE_FMT),
-                        transaction.getTime().format(TIME_FMT),
-                        transaction.getDescription(),
-                        transaction.getVendor(),
-                        transaction.getAmount());
+                printTransaction(transaction);
             }
         }
         System.out.println();
     }
 
+    /**
+     * Method description
+     *
+     */
     private static void displayPayments() {
         if (transactions.isEmpty()) {
             System.out.println("No transactions available.");
@@ -168,17 +186,16 @@ public class FinancialTracker {
 
         for (Transaction transaction : transactions) {
             if (transaction.getAmount() < 0) {
-                System.out.printf("%-10s | %-7s | %-30s | %-20s | %10.2f%n",
-                        transaction.getDate().format(DATE_FMT),
-                        transaction.getTime().format(TIME_FMT),
-                        transaction.getDescription(),
-                        transaction.getVendor(),
-                        transaction.getAmount());
+                printTransaction(transaction);
             }
         }
         System.out.println();
     }
 
+    /**
+     * Method description
+     *
+     */
     private static void reportsMenu(Scanner scanner) {
         boolean isRunning = true;
         while (isRunning) {
@@ -231,6 +248,10 @@ public class FinancialTracker {
         }
     }
 
+    /**
+     * Method description
+     *
+     */
     private static void filterTransactionsByDate(LocalDate start, LocalDate end, String displayType) {
         if (transactions.isEmpty()) {
             System.out.println("Report is currently empty.");
@@ -250,25 +271,23 @@ public class FinancialTracker {
                 "Date", "Time", "Description", "Vendor", "Amount");
         System.out.println("-".repeat(90));
 
-        boolean found = false;
+        boolean isFound = false;
         for (Transaction transaction : transactions) {
             LocalDate date = transaction.getDate();
-            if ((date.isAfter(start) || date.isEqual(start)) &&
-                    (date.isBefore(end) || date.isEqual(end))) {
-                System.out.printf("%-10s | %-7s | %-30s | %-20s | %10.2f%n",
-                        transaction.getDate().format(DATE_FMT),
-                        transaction.getTime().format(TIME_FMT),
-                        transaction.getDescription(),
-                        transaction.getVendor(),
-                        transaction.getAmount());
-                found = true;
+            if (!date.isBefore(start) && !date.isAfter(end)) {
+                printTransaction(transaction);
+                isFound = true;
             }
         }
-        if (!found) {
+        if (!isFound) {
             System.out.println("No transactions found in this date range.");
         }
     }
 
+    /**
+     * Method description
+     *
+     */
     private static void filterTransactionsByVendor(String vendor) {
         if (transactions.isEmpty()) {
             System.out.println("No transactions available.");
@@ -278,31 +297,92 @@ public class FinancialTracker {
         sortTransactions();
         displayLedgerTable("--Transactions by Vendor--");
 
-        boolean found = false;
+        boolean isFound = false;
         for (Transaction transaction : transactions) {
             if (transaction.getVendor().equalsIgnoreCase(vendor)) {
-                System.out.printf("%-10s | %-7s | %-30s | %-20s | %10.2f%n",
-                        transaction.getDate().format(DATE_FMT),
-                        transaction.getTime().format(TIME_FMT),
-                        transaction.getDescription(),
-                        transaction.getVendor(),
-                        transaction.getAmount());
-                found = true;
+                printTransaction(transaction);
+                isFound = true;
             }
         }
-        if (!found) {
+        if (!isFound) {
             System.out.println("No transactions found for vendor: " + vendor);
         }
     }
 
+    /**
+     * Method description
+     *
+     */
     private static void customSearch(Scanner scanner) {
+        // Input validation and re-prompt user
+        if (transactions.isEmpty()) {
+            System.out.println("No transactions available.");
+            return;
+        }
 
+        System.out.print("\nEnter start date (yyyy-MM-dd) or leave blank: ");
+        String startInput = scanner.nextLine().trim();
+        LocalDate start = startInput.isEmpty() ? null : parseDate(startInput);
+
+        System.out.print("Enter end date (yyyy-MM-dd) or leave blank: ");
+        String endInput = scanner.nextLine().trim();
+        LocalDate end = endInput.isEmpty() ? null : parseDate(endInput);
+
+        System.out.print("Enter description keyword or leave blank: ");
+        String desc = scanner.nextLine().trim();
+
+        System.out.print("Enter vendor or leave blank: ");
+        String vendor = scanner.nextLine().trim();
+
+        System.out.print("Enter exact amount or leave blank: ");
+        String amtInput = scanner.nextLine().trim();
+        Double amount = amtInput.isEmpty() ? null : parseDouble(amtInput);
+
+        sortTransactions();
+        displayLedgerTable("--Transactions by Custom Search--");
+
+        boolean isFound = false;
+        for (Transaction transaction : transactions) {
+            boolean isMatched = true;
+
+            if (start != null && transaction.getDate().isBefore(start)) {
+                isMatched = false;
+            }
+
+            if (end != null && transaction.getDate().isAfter(end)) {
+                isMatched = false;
+            }
+
+            if (!desc.isEmpty() && !transaction.getDescription().toLowerCase().contains(desc.toLowerCase())) {
+                isMatched = false;
+            }
+
+            if (!vendor.isEmpty() && !transaction.getVendor().equalsIgnoreCase(vendor)) {
+                isMatched = false;
+            }
+
+            if (amount != null && transaction.getAmount() != amount) {
+                isMatched = false;
+            }
+
+            if (isMatched) {
+                printTransaction(transaction);
+                isFound = true;
+            }
+        }
+        if (!isFound) {
+            System.out.println("No transactions found for the given filters");
+        }
     }
 
+    /**
+     * Method description
+     *
+     */
     private static void addTransaction(Scanner scanner, boolean isPayment, String transactionType) {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_NAME, true));
-            // Pass second string to differentiate between Making payment vs Adding payment?
+            // Input validation and re-prompt user
             System.out.print("Enter transaction date & time to begin adding " + transactionType + " (yyyy-MM-dd HH:mm:ss), enter N to set it to the current date/time: ");
             String dateTime = scanner.nextLine();
 
@@ -342,11 +422,13 @@ public class FinancialTracker {
             System.out.println("\nYou have successfully added your " + transactionType + ".\n");
 
         } catch (DateTimeParseException ex) {
-            System.err.println("Invalid date/time format. Use yyyy-MM-dd HH:mm:ss.");
+            System.out.println("\nInvalid date/time format. Use yyyy-MM-dd HH:mm:ss.");
+        } catch (InputMismatchException ex) {
+            System.out.println("\nInvalid input, please enter a valid amount.");
         } catch (IOException ex) {
-            System.err.println("Error writing to file.");
+            System.out.println("\nError writing to file.");
         } catch (Exception ex) {
-            System.err.println("Error: " + ex.getMessage()); // Utility parser to throw exception if parsing is invalid?
+            System.out.println("\nError: " + ex.getMessage());
         }
     }
 
@@ -456,19 +538,44 @@ public class FinancialTracker {
         }
     }*/
 
-    private static void displayLedgerTable(String title){
-        System.out.printf("%50s%n%n", title);
+    /**
+     * Method description
+     *
+     */
+    private static void printTransaction(Transaction transaction) {
+        System.out.printf("%-10s | %-7s | %-30s | %-20s | %10.2f%n",
+                transaction.getDate().format(DATE_FMT),
+                transaction.getTime().format(TIME_FMT),
+                transaction.getDescription(),
+                transaction.getVendor(),
+                transaction.getAmount());
+    }
+
+    /**
+     * Method description
+     *
+     */
+    private static void displayLedgerTable(String title) {
+        System.out.printf("%n%50s%n%n", title);
         System.out.printf("%-10s | %-8s | %-30s | %-20s | %10s%n",
                 "Date", "Time", "Description", "Vendor", "Amount");
         System.out.println("-".repeat(90));
     }
 
-    private static void sortTransactions(){
+    /**
+     * Method description
+     *
+     */
+    private static void sortTransactions() {
         transactions.sort(Comparator.comparing(Transaction::getDate)
                 .thenComparing(Transaction::getTime)
                 .reversed());
     }
 
+    /**
+     * Method description
+     *
+     */
     private static LocalDate parseDate(String s) {
         try {
             return LocalDate.parse(s);
@@ -477,6 +584,10 @@ public class FinancialTracker {
         }
     }
 
+    /**
+     * Method description
+     *
+     */
     private static LocalTime parseTime(String s) {
         try {
             return LocalTime.parse(s);
@@ -485,6 +596,10 @@ public class FinancialTracker {
         }
     }
 
+    /**
+     * Method description
+     *
+     */
     private static Double parseDouble(String s) {
         try {
             return Double.parseDouble(s);
