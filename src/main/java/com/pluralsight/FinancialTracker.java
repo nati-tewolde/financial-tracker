@@ -28,7 +28,7 @@ public class FinancialTracker {
         boolean isRunning = true;
 
         while (isRunning) {
-            System.out.println("Welcome to TransactionApp");
+            System.out.println("\nWelcome to TransactionApp");
             System.out.println("Choose an option: ");
             System.out.println("D) Add Deposit");
             System.out.println("P) Make Payment (Debit)");
@@ -115,17 +115,89 @@ public class FinancialTracker {
     }
 
     private static void displayLedger() {
-        displayTransaction("all");
+        System.out.printf("%50s%n%n", "--All Transactions--");
+
+        if (transactions.isEmpty()) {
+            System.out.println("Ledger is currently empty.");
+            return;
+        }
+
+        transactions.sort(Comparator.comparing(Transaction::getDate)
+                .thenComparing(Transaction::getTime)
+                .reversed());
+
+        System.out.printf("%-10s | %-8s | %-30s | %-20s | %10s%n",
+                "Date", "Time", "Description", "Vendor", "Amount");
+        System.out.println("-".repeat(90));
+
+        for (Transaction transaction : transactions) {
+            System.out.printf("%-10s | %-7s | %-30s | %-20s | %10.2f%n",
+                    transaction.getDate().format(DATE_FMT),
+                    transaction.getTime().format(TIME_FMT),
+                    transaction.getDescription(),
+                    transaction.getVendor(),
+                    transaction.getAmount());
+        }
+        System.out.println();
     }
 
     private static void displayDeposits() {
-        displayTransaction("deposit");
+        System.out.printf("%50s%n%n", "--Deposits--");
+
+        if (transactions.isEmpty()) {
+            System.out.println("Ledger is currently empty.");
+            return;
+        }
+
+        transactions.sort(Comparator.comparing(Transaction::getDate)
+                .thenComparing(Transaction::getTime)
+                .reversed());
+
+        System.out.printf("%-10s | %-8s | %-30s | %-20s | %10s%n",
+                "Date", "Time", "Description", "Vendor", "Amount");
+        System.out.println("-".repeat(90));
+
+        for (Transaction transaction : transactions) {
+            if (transaction.getAmount() > 0) {
+                System.out.printf("%-10s | %-7s | %-30s | %-20s | %10.2f%n",
+                        transaction.getDate().format(DATE_FMT),
+                        transaction.getTime().format(TIME_FMT),
+                        transaction.getDescription(),
+                        transaction.getVendor(),
+                        transaction.getAmount());
+            }
+        }
+        System.out.println();
     }
 
     private static void displayPayments() {
-        displayTransaction("payment");
-    }
+        System.out.printf("%50s%n%n", "--Payments--");
 
+        if (transactions.isEmpty()) {
+            System.out.println("Ledger is currently empty.");
+            return;
+        }
+
+        transactions.sort(Comparator.comparing(Transaction::getDate)
+                .thenComparing(Transaction::getTime)
+                .reversed());
+
+        System.out.printf("%-10s | %-8s | %-30s | %-20s | %10s%n",
+                "Date", "Time", "Description", "Vendor", "Amount");
+        System.out.println("-".repeat(90));
+
+        for (Transaction transaction : transactions) {
+            if (transaction.getAmount() < 0) {
+                System.out.printf("%-10s | %-7s | %-30s | %-20s | %10.2f%n",
+                        transaction.getDate().format(DATE_FMT),
+                        transaction.getTime().format(TIME_FMT),
+                        transaction.getDescription(),
+                        transaction.getVendor(),
+                        transaction.getAmount());
+            }
+        }
+        System.out.println();
+    }
 
     private static void reportsMenu(Scanner scanner) {
         boolean isRunning = true;
@@ -180,11 +252,76 @@ public class FinancialTracker {
     }
 
     private static void filterTransactionsByDate(LocalDate start, LocalDate end, String displayType) {
-        filterTransaction("date", start, end, null, displayType);
+        transactions.sort(Comparator.comparing(Transaction::getDate)
+                .thenComparing(Transaction::getTime)
+                .reversed());
+
+        switch (displayType.toLowerCase()) {
+            case "month-to-date" -> System.out.printf("%50s%n%n", "--Month To Date Report--");
+            case "previous-month" -> System.out.printf("%50s%n%n", "--Previous Month Report--");
+            case "year-to-date" -> System.out.printf("%50s%n%n", "--Year To Date Report--");
+            default -> System.out.printf("%50s%n%n", "--Previous Year Report--");
+        }
+
+        if (transactions.isEmpty()) {
+            System.out.println("Report is currently empty.");
+            return;
+        }
+
+        System.out.printf("%-10s | %-8s | %-30s | %-20s | %10s%n",
+                "Date", "Time", "Description", "Vendor", "Amount");
+        System.out.println("-".repeat(90));
+
+        boolean found = false;
+        for (Transaction transaction : transactions) {
+            LocalDate date = transaction.getDate();
+            if ((date.isAfter(start) || date.isEqual(start)) &&
+                    (date.isBefore(end) || date.isEqual(end))) {
+                System.out.printf("%-10s | %-7s | %-30s | %-20s | %10.2f%n",
+                        transaction.getDate().format(DATE_FMT),
+                        transaction.getTime().format(TIME_FMT),
+                        transaction.getDescription(),
+                        transaction.getVendor(),
+                        transaction.getAmount());
+                found = true;
+            }
+        }
+        if (!found) {
+            System.out.println("No transactions found in this date range.");
+        }
     }
 
     private static void filterTransactionsByVendor(String vendor) {
-        filterTransaction("vendor", null, null, vendor, "vendor");
+        transactions.sort(Comparator.comparing(Transaction::getDate)
+                .thenComparing(Transaction::getTime)
+                .reversed());
+
+        System.out.printf("%50s%n%n", "--Transactions by Vendor--");
+
+        if (transactions.isEmpty()) {
+            System.out.println("No transactions available.");
+            return;
+        }
+
+        System.out.printf("%-10s | %-8s | %-30s | %-20s | %10s%n",
+                "Date", "Time", "Description", "Vendor", "Amount");
+        System.out.println("-".repeat(90));
+
+        boolean found = false;
+        for (Transaction transaction : transactions) {
+            if (transaction.getVendor().equalsIgnoreCase(vendor)) {
+                System.out.printf("%-10s | %-7s | %-30s | %-20s | %10.2f%n",
+                        transaction.getDate().format(DATE_FMT),
+                        transaction.getTime().format(TIME_FMT),
+                        transaction.getDescription(),
+                        transaction.getVendor(),
+                        transaction.getAmount());
+                found = true;
+            }
+        }
+        if (!found) {
+            System.out.println("No transactions found for vendor: " + vendor);
+        }
     }
 
     private static void customSearch(Scanner scanner) {
@@ -201,19 +338,15 @@ public class FinancialTracker {
 
             LocalDate date;
             LocalTime time;
-            try {
-                if (dateTime.equalsIgnoreCase("n")) {
-                    date = LocalDate.now();
-                    time = LocalTime.now();
-                } else {
-                    String[] dateTimeParts = dateTime.split(" ");
-                    date = LocalDate.parse(dateTimeParts[0]);
-                    time = LocalTime.parse(dateTimeParts[1]);
-                }
-            } catch (DateTimeParseException ex) {
-                System.out.println("\nInvalid transaction date/time format, please use yyyy-MM-dd HH:mm:ss.\n");
-                return;
+            if (dateTime.equalsIgnoreCase("n")) {
+                date = LocalDate.now();
+                time = LocalTime.now();
+            } else {
+                String[] dateTimeParts = dateTime.split(" ");
+                date = LocalDate.parse(dateTimeParts[0]);
+                time = LocalTime.parse(dateTimeParts[1]);
             }
+
             System.out.print("\nEnter " + transactionType + " description: ");
             String description = scanner.nextLine();
 
@@ -231,18 +364,23 @@ public class FinancialTracker {
             if (isPayment) {
                 amount = -amount;
             }
+
             transactions.add(new Transaction(date, time, description, vendor, amount));
             writer.write(date.format(DATE_FMT) + "|" + time.format(TIME_FMT) + "|" + description + "|" + vendor + "|" + amount + "\n");
+            writer.close();
 
             System.out.println("\nYou have successfully added your " + transactionType + ".\n");
 
-            writer.close();
+        } catch (DateTimeParseException ex) {
+            System.err.println("Invalid date/time format. Use yyyy-MM-dd HH:mm:ss.");
+        } catch (IOException ex) {
+            System.err.println("Error writing to file.");
         } catch (Exception ex) {
-            System.out.println("\nError: invalid input and/or reading file.\n"); //Nest try/catch so catch error message is more specific?
+            System.err.println("Error: " + ex.getMessage()); // Utility parser to throw exception if parsing is invalid?
         }
     }
 
-    private static void displayTransaction(String displayType) {
+    /*private static void displayTransaction(String displayType) {
         // Dynamically scale column width based on length of description and vendor?
         transactions.sort(Comparator.comparing(Transaction::getDate)
                 .thenComparing(Transaction::getTime)
@@ -287,9 +425,9 @@ public class FinancialTracker {
                     transaction.getAmount());
         }
         System.out.println();
-    }
+    }*/
 
-    private static void filterTransaction(String filterType, LocalDate start, LocalDate end, String vendor, String displayType) {
+    /*private static void filterTransaction(String filterType, LocalDate start, LocalDate end, String vendor, String displayType) {
         transactions.sort(Comparator.comparing(Transaction::getDate)
                 .thenComparing(Transaction::getTime)
                 .reversed());
@@ -321,37 +459,32 @@ public class FinancialTracker {
                 "Date", "Time", "Description", "Vendor", "Amount");
         System.out.println("-".repeat(90));
 
-        // Refactor to switch case and refactor getters in conditions
         boolean isFound = false;
         for (Transaction transaction : transactions) {
             LocalDate date = transaction.getDate();
-            if (filterType.equalsIgnoreCase("date")) {
-                if ((date.isAfter(start) || date.isEqual(start))
-                        && (date.isBefore(end) || date.isEqual(end))) {
-                    System.out.printf("%-10s | %-7s | %-30s | %-20s | %10.2f%n",
-                            transaction.getDate().format(DATE_FMT),
-                            transaction.getTime().format(TIME_FMT),
-                            transaction.getDescription(),
-                            transaction.getVendor(),
-                            transaction.getAmount());
-                    isFound = true;
-                }
-            } else if (filterType.equalsIgnoreCase("vendor")) {
-                if (transaction.getVendor().equalsIgnoreCase(vendor.trim())) {
-                    System.out.printf("%-10s | %-7s | %-30s | %-20s | %10.2f%n",
-                            transaction.getDate().format(DATE_FMT),
-                            transaction.getTime().format(TIME_FMT),
-                            transaction.getDescription(),
-                            transaction.getVendor(),
-                            transaction.getAmount());
-                    isFound = true;
-                }
+            LocalTime time = transaction.getTime();
+            String desc = transaction.getDescription();
+            String vend = transaction.getVendor();
+            double amt = transaction.getAmount();
+
+            boolean isMatched = false;
+
+            switch (filterType.toLowerCase()) {
+                case "date" -> isMatched = (date.isAfter(start) || date.isEqual(start))
+                        && (date.isBefore(end) || date.isEqual(end));
+                case "vendor" -> isMatched = vend.equalsIgnoreCase(vendor.trim());
+            }
+
+            if (isMatched) {
+                System.out.printf("%-10s | %-7s | %-30s | %-20s | %10.2f%n",
+                        date.format(DATE_FMT), time.format(TIME_FMT), desc, vend, amt);
+                isFound = true;
             }
         }
         if (!isFound) {
             System.out.print("No transactions found for specified filter\n");
         }
-    }
+    }*/
 
     private static LocalDate parseDate(String s) {
         try {
@@ -361,6 +494,7 @@ public class FinancialTracker {
         }
     }
 
+    // Delete if not used again in custom search
     private static LocalTime parseTime(String s) {
         try {
             return LocalTime.parse(s);
