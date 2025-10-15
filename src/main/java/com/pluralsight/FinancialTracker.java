@@ -62,6 +62,7 @@ public class FinancialTracker {
                     continue;
                 }
 
+                // Not wrap utility parsers in try/catch?
                 LocalDate date = parseDate(parts[0]);
                 LocalTime time = parseTime(parts[1]);
                 String description = parts[2];
@@ -115,20 +116,13 @@ public class FinancialTracker {
     }
 
     private static void displayLedger() {
-        System.out.printf("%50s%n%n", "--All Transactions--");
-
         if (transactions.isEmpty()) {
-            System.out.println("Ledger is currently empty.");
+            System.out.println("No transactions available.");
             return;
         }
 
-        transactions.sort(Comparator.comparing(Transaction::getDate)
-                .thenComparing(Transaction::getTime)
-                .reversed());
-
-        System.out.printf("%-10s | %-8s | %-30s | %-20s | %10s%n",
-                "Date", "Time", "Description", "Vendor", "Amount");
-        System.out.println("-".repeat(90));
+        sortTransactions();
+        displayLedgerTable("--All Transactions--");
 
         for (Transaction transaction : transactions) {
             System.out.printf("%-10s | %-7s | %-30s | %-20s | %10.2f%n",
@@ -142,20 +136,13 @@ public class FinancialTracker {
     }
 
     private static void displayDeposits() {
-        System.out.printf("%50s%n%n", "--Deposits--");
-
         if (transactions.isEmpty()) {
-            System.out.println("Ledger is currently empty.");
+            System.out.println("No transactions available.");
             return;
         }
 
-        transactions.sort(Comparator.comparing(Transaction::getDate)
-                .thenComparing(Transaction::getTime)
-                .reversed());
-
-        System.out.printf("%-10s | %-8s | %-30s | %-20s | %10s%n",
-                "Date", "Time", "Description", "Vendor", "Amount");
-        System.out.println("-".repeat(90));
+        sortTransactions();
+        displayLedgerTable("--Deposits--");
 
         for (Transaction transaction : transactions) {
             if (transaction.getAmount() > 0) {
@@ -171,20 +158,13 @@ public class FinancialTracker {
     }
 
     private static void displayPayments() {
-        System.out.printf("%50s%n%n", "--Payments--");
-
         if (transactions.isEmpty()) {
-            System.out.println("Ledger is currently empty.");
+            System.out.println("No transactions available.");
             return;
         }
 
-        transactions.sort(Comparator.comparing(Transaction::getDate)
-                .thenComparing(Transaction::getTime)
-                .reversed());
-
-        System.out.printf("%-10s | %-8s | %-30s | %-20s | %10s%n",
-                "Date", "Time", "Description", "Vendor", "Amount");
-        System.out.println("-".repeat(90));
+        sortTransactions();
+        displayLedgerTable("--Payments--");
 
         for (Transaction transaction : transactions) {
             if (transaction.getAmount() < 0) {
@@ -252,20 +232,18 @@ public class FinancialTracker {
     }
 
     private static void filterTransactionsByDate(LocalDate start, LocalDate end, String displayType) {
-        transactions.sort(Comparator.comparing(Transaction::getDate)
-                .thenComparing(Transaction::getTime)
-                .reversed());
+        if (transactions.isEmpty()) {
+            System.out.println("Report is currently empty.");
+            return;
+        }
+
+        sortTransactions();
 
         switch (displayType.toLowerCase()) {
             case "month-to-date" -> System.out.printf("%50s%n%n", "--Month To Date Report--");
             case "previous-month" -> System.out.printf("%50s%n%n", "--Previous Month Report--");
             case "year-to-date" -> System.out.printf("%50s%n%n", "--Year To Date Report--");
             default -> System.out.printf("%50s%n%n", "--Previous Year Report--");
-        }
-
-        if (transactions.isEmpty()) {
-            System.out.println("Report is currently empty.");
-            return;
         }
 
         System.out.printf("%-10s | %-8s | %-30s | %-20s | %10s%n",
@@ -292,20 +270,13 @@ public class FinancialTracker {
     }
 
     private static void filterTransactionsByVendor(String vendor) {
-        transactions.sort(Comparator.comparing(Transaction::getDate)
-                .thenComparing(Transaction::getTime)
-                .reversed());
-
-        System.out.printf("%50s%n%n", "--Transactions by Vendor--");
-
         if (transactions.isEmpty()) {
             System.out.println("No transactions available.");
             return;
         }
 
-        System.out.printf("%-10s | %-8s | %-30s | %-20s | %10s%n",
-                "Date", "Time", "Description", "Vendor", "Amount");
-        System.out.println("-".repeat(90));
+        sortTransactions();
+        displayLedgerTable("--Transactions by Vendor--");
 
         boolean found = false;
         for (Transaction transaction : transactions) {
@@ -325,8 +296,7 @@ public class FinancialTracker {
     }
 
     private static void customSearch(Scanner scanner) {
-        // TODO – prompt for any combination of date range, description,
-        //        vendor, and exact amount, then display matches
+
     }
 
     private static void addTransaction(Scanner scanner, boolean isPayment, String transactionType) {
@@ -486,6 +456,19 @@ public class FinancialTracker {
         }
     }*/
 
+    private static void displayLedgerTable(String title){
+        System.out.printf("%50s%n%n", title);
+        System.out.printf("%-10s | %-8s | %-30s | %-20s | %10s%n",
+                "Date", "Time", "Description", "Vendor", "Amount");
+        System.out.println("-".repeat(90));
+    }
+
+    private static void sortTransactions(){
+        transactions.sort(Comparator.comparing(Transaction::getDate)
+                .thenComparing(Transaction::getTime)
+                .reversed());
+    }
+
     private static LocalDate parseDate(String s) {
         try {
             return LocalDate.parse(s);
@@ -494,7 +477,6 @@ public class FinancialTracker {
         }
     }
 
-    // Delete if not used again in custom search
     private static LocalTime parseTime(String s) {
         try {
             return LocalTime.parse(s);
