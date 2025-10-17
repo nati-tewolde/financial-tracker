@@ -28,6 +28,7 @@ public class FinancialTracker {
     public static final String PURPLE = "\u001B[35m";
     public static final String CYAN = "\u001B[36m";
     public static final String WHITE = "\u001B[37m";
+    public static final String HIGH_INTENSITY = "\u001B[1m";
 
     public static void main(String[] args) {
         loadTransactions(FILE_NAME);
@@ -36,7 +37,7 @@ public class FinancialTracker {
         boolean isRunning = true;
 
         while (isRunning) {
-            System.out.println("\n" + CYAN + """ 
+            System.out.println("\n" + CYAN + HIGH_INTENSITY + """ 
                     ┏━╸╻┏┓╻┏━┓┏┓╻┏━╸╻┏━┓╻  ╺┳╸┏━┓┏━┓┏━╸╻┏ ┏━╸┏━┓
                     ┣╸ ┃┃┗┫┣━┫┃┗┫┃  ┃┣━┫┃   ┃ ┣┳┛┣━┫┃  ┣┻┓┣╸ ┣┳┛
                     ╹  ╹╹ ╹╹ ╹╹ ╹┗━╸╹╹ ╹┗━╸ ╹ ╹┗╸╹ ╹┗━╸╹ ╹┗━╸╹┗╸®""" + RESET);
@@ -511,6 +512,11 @@ public class FinancialTracker {
             while (true) {
                 System.out.print("\nEnter " + transactionType + " amount: ");
                 String amountInput = scanner.nextLine().trim();
+
+                if (amountInput.length() > 25) {
+                    System.out.println(RED + "\nAmount is too long to store, please enter a more appropriate amount." + RESET);
+                    continue;
+                }
 
                 try {
                     amount = Double.parseDouble(amountInput);
