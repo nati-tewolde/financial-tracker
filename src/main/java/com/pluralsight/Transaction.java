@@ -39,12 +39,12 @@ public class Transaction {
         return amount;
     }
 
-    @Override
+    /*@Override
     public String toString() {
         return date + "|" +
                 time + "|" +
                 description + "|" +
                 vendor + "|" +
                 amount;
-    }
+    }*/
 }

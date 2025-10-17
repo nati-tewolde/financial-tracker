@@ -255,7 +255,7 @@ public class FinancialTracker {
                     while (true) {
                         System.out.print("\nEnter vendor name to filter transactions by vendor: ");
                         vendor = scanner.nextLine();
-                        if (vendor.isEmpty()) {
+                        if (vendor.isBlank()) {
                             System.out.println(RED + "\nVendor name cannot be empty." + RESET);
                             continue;
                         }
@@ -704,5 +704,17 @@ public class FinancialTracker {
         } catch (Exception ex) {
             return null;
         }
+    }*/
+
+    /*public static void printMainMenuTitle(String text, int delayMillis) {
+        for (char c : text.toCharArray()) {
+            System.out.print(c);
+            System.out.flush();
+            try {
+                Thread.sleep(delayMillis);
+            } catch (InterruptedException ignored) {
+            }
+        }
+        System.out.println();
     }*/
 }
