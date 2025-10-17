@@ -1,19 +1,26 @@
-# Project Title
+# Financial Tracker: Accounting Ledger Application
 
-## Description of the Project
+## Description 
 
-Briefly describe what this Java console application does. Mention its purpose and who the intended users are. Explain the main functionality and what problems it aims to solve.
+Financial Tracker is a Java-based command-line application that assists users in tracking their financial transactions for personal & business use.
+It supports adding new transactions, displaying them in ledgers, and filtering through multiple types of financial reports.
 
 ## User Stories
 
-List the user stories that guided the development of your application. Format these stories as: "As a [type of user], I want [some goal] so that [some reason]."
-
-- As a user, I want to be able to input my data, so that the application can process it accordingly.
-- As a user, I want to receive immediate feedback, so I can understand what to do next.
+- As a user, I want my transactions to be saved & displayed accurately, so that I can view my deposits and payments later.
+- As a user, I want my saved transactions to load as I start the application, so that I can view my current/previous payments & deposits.
+- As a user, I want to record a new deposit, so that my transaction ledger reflects the money I've received.
+- As a user, I want to record a new (debit) payment, so that my transaction ledger includes the money I've spent.
+- As a user, I want to view all my transactions in one place, so that I can review my complete financial history.
+- As a user, I want to exclusively view my deposits, so that I can review all the money I've received.
+- As a user, I want to view only my payments, so that I can track all the money I've spent.
+- As a user, I want to view transactions within a specific date range, so that I can review my financial activity during that period.
+- As a user, I want to view all transactions based on a specific vendor, so that I can track my spending/income in relation to that vendor.
+- As a user, I want to search for transactions using a combination of filters, so that I can easily find specific transactions without browsing through my entire ledger.
 
 ## Setup
 
-Instructions on how to set up and run the project using IntelliJ IDEA.
+Instructions on how to set up and run the project using IntelliJ IDEA:
 
 ### Prerequisites
 
@@ -32,37 +39,28 @@ Follow these steps to get your application running within IntelliJ IDEA:
 
 ## Technologies Used
 
-- Java: Mention the version you are using.
-- Any additional libraries or frameworks used in the project.
+- Java: Amazon Corretto 17.0.16
 
 ## Demo
 
-Include screenshots or GIFs that show your application in action. Use tools like [Giphy Capture](https://giphy.com/apps/giphycapture) to record a GIF of your application.
-
-![Application Screenshot](path/to/your/screenshot.png)
+![Application Screenshot](./capstone-demo.gif)
 
 ## Future Work
 
-Outline potential future enhancements or functionalities you might consider adding:
-
-- Additional feature to be developed.
-- Improvement of current functionalities.
+- Exporting reports: save filtered or custom reports as a new file.
+- Ledger Summary: show total deposits, total payments, and current balance.
+- Modify transactions: edit or remove transactions without modifying the file directly.
 
 ## Resources
 
-List resources such as tutorials, articles, or documentation that helped you during the project.
-
-- [Java Programming Tutorial](https://www.example.com)
-- [Effective Java](https://www.example.com)
+- [Potato Sensei - OpenAI: ChatGpt 5 LLM](https://chatgpt.com/g/g-681d378b0c90819197b16e49abe384ec-potato-sensei)
+- [LocalDate (Java Platform SE 8 ) - Oracle Documentation](https://docs.oracle.com/javase/8/docs/api/java/time/LocalDate.html)
+- [Java Comparator Interface - GeeksforGeeks](https://www.geeksforgeeks.org/java/java-comparator-interface/)
 
 ## Team Members
 
-- **Name 1** - Specific contributions or roles.
-- **Name 2** - Specific contributions or roles.
+- **Natnael Tewolde:** Main Contributor
 
 ## Thanks
 
-Express gratitude towards those who provided help, guidance, or resources:
-
-- Thank you to [Mentor's Name] for continuous support and guidance.
-- A special thanks to all teammates for their dedication and teamwork.
+- Thank you to both *potato senseis* for your continuous support and guidance!
