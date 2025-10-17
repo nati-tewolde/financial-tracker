@@ -22,10 +22,8 @@ public class FinancialTracker {
     private static final DateTimeFormatter DATETIME_FMT = DateTimeFormatter.ofPattern(DATETIME_PATTERN);
 
     public static final String RESET = "\u001B[0m";
-    public static final String BLACK = "\u001B[30m";
     public static final String RED = "\u001B[31m";
     public static final String GREEN = "\u001B[32m";
-    public static final String YELLOW = "\u001B[33m";
     public static final String BLUE = "\u001B[34m";
     public static final String PURPLE = "\u001B[35m";
     public static final String CYAN = "\u001B[36m";
@@ -38,12 +36,15 @@ public class FinancialTracker {
         boolean isRunning = true;
 
         while (isRunning) {
-            System.out.println(CYAN + "\nWelcome to TransactionTracker" + RESET);
-            System.out.println("Choose an option: ");
+            System.out.println("\n" + CYAN + """ 
+                    ┏━╸╻┏┓╻┏━┓┏┓╻┏━╸╻┏━┓╻  ╺┳╸┏━┓┏━┓┏━╸╻┏ ┏━╸┏━┓
+                    ┣╸ ┃┃┗┫┣━┫┃┗┫┃  ┃┣━┫┃   ┃ ┣┳┛┣━┫┃  ┣┻┓┣╸ ┣┳┛
+                    ╹  ╹╹ ╹╹ ╹╹ ╹┗━╸╹╹ ╹┗━╸ ╹ ╹┗╸╹ ╹┗━╸╹ ╹┗━╸╹┗╸®""" + RESET);
             System.out.println("D) Add Deposit");
             System.out.println("P) Make Payment (Debit)");
             System.out.println("L) Ledger");
             System.out.println("X) Exit");
+            System.out.print(WHITE + "Choose an option: " + RESET);
 
             String input = scanner.nextLine().trim();
 
@@ -52,7 +53,7 @@ public class FinancialTracker {
                 case "P" -> addPayment(scanner);
                 case "L" -> ledgerMenu(scanner);
                 case "X" -> isRunning = false;
-                default -> System.out.println("\nInvalid option");
+                default -> System.out.println(RED + "\nInvalid option." + RESET);
             }
         }
         scanner.close();
@@ -60,7 +61,6 @@ public class FinancialTracker {
 
     /**
      * Reads file line-by-line, parsing and storing each field into a new transaction
-     *
      */
     public static void loadTransactions(String fileName) {
         try {
@@ -69,18 +69,21 @@ public class FinancialTracker {
             if (!file.exists()) {
                 file.createNewFile();
             }
-            // Reads each line, splits fields, parses each value, and stores it in the arraylist
+
             BufferedReader reader = new BufferedReader(new FileReader(fileName));
+            // Reads each line and splits line based on pipe location
             String line;
             while ((line = reader.readLine()) != null) {
                 String[] parts = line.split("\\|");
 
+                // Validates line content
                 if (parts.length != 5) {
                     System.out.println(RED + "\nError extracting file content, please check " +
                             fileName + " for corrupted data." + RESET);
                     continue;
                 }
 
+                // Parses necessary fields
                 LocalDate date = LocalDate.parse(parts[0]);
                 LocalTime time = LocalTime.parse(parts[1]);
                 String description = parts[2];
@@ -91,44 +94,42 @@ public class FinancialTracker {
                     continue;
                 }*/
 
+                // Stores transaction in arraylist
                 transactions.add(new Transaction(date, time, description, vendor, amount));
             }
             reader.close();
         } catch (Exception ex) {
-            System.err.println("\nError reading file.");
+            System.err.println(RED + "\nError reading file." + RESET);
         }
     }
 
     /**
-     * Method description
-     *
+     * Calls addTransaction method to prompt user to add a new deposit
      */
     private static void addDeposit(Scanner scanner) {
         addTransaction(scanner, false, "deposit");
     }
 
     /**
-     * Method description
-     *
+     * Calls addTransaction method to prompt user to add a new payment
      */
     private static void addPayment(Scanner scanner) {
         addTransaction(scanner, true, "payment");
     }
 
     /**
-     * Method description
-     *
+     * Displays ledger options to prompt user
      */
     private static void ledgerMenu(Scanner scanner) {
         boolean isRunning = true;
         while (isRunning) {
             System.out.println(PURPLE + "\nLedger Menu" + RESET);
-            System.out.println("Choose an option:");
             System.out.println("A) All");
             System.out.println("D) Deposits");
             System.out.println("P) Payments");
             System.out.println("R) Reports");
             System.out.println("H) Home");
+            System.out.print(WHITE + "Choose an option: " + RESET);
 
             String input = scanner.nextLine().trim();
 
@@ -138,24 +139,28 @@ public class FinancialTracker {
                 case "P" -> displayPayments();
                 case "R" -> reportsMenu(scanner);
                 case "H" -> isRunning = false;
-                default -> System.out.println("\nInvalid option.");
+                default -> System.out.println(RED + "\nInvalid option." + RESET);
             }
         }
     }
 
     /**
-     * Method description
-     *
+     * Displays all transactions stored in the arraylist
      */
     private static void displayLedger() {
+        // Prints message if no transactions are currently stored
         if (transactions.isEmpty()) {
-            System.out.println("No transactions available.");
+            System.out.println(RED + "\nNo transactions available." + RESET);
             return;
         }
 
+        // Calls method to sort transactions (descending)
+        // and display ledger in table format
         sortTransactions();
-        displayLedgerTable("--All Transactions--");
+        displayLedgerTable(PURPLE + "--All Transactions--" + RESET);
 
+        // Iterates through each transaction and calls
+        // method to print them
         for (Transaction transaction : transactions) {
             printTransaction(transaction);
         }
@@ -163,18 +168,18 @@ public class FinancialTracker {
     }
 
     /**
-     * Method description
-     *
+     * Displays only deposits or transactions with amounts greater than 0
      */
     private static void displayDeposits() {
         if (transactions.isEmpty()) {
-            System.out.println("No transactions available.");
+            System.out.println(RED + "\nNo transactions available." + RESET);
             return;
         }
 
         sortTransactions();
-        displayLedgerTable("--Deposits--");
+        displayLedgerTable(PURPLE + "--Deposits--" + RESET);
 
+        // Checks if transaction is positive
         for (Transaction transaction : transactions) {
             if (transaction.getAmount() > 0) {
                 printTransaction(transaction);
@@ -184,19 +189,19 @@ public class FinancialTracker {
     }
 
     /**
-     * Method description
-     *
+     * Displays only payments or transactions with amounts less than 0
      */
     private static void displayPayments() {
         if (transactions.isEmpty()) {
-            System.out.println("No transactions available.");
+            System.out.println(RED + "\nNo transactions available." + RESET);
             return;
         }
 
         sortTransactions();
-        displayLedgerTable("--Payments--");
+        displayLedgerTable(PURPLE + "--Payments--" + RESET);
 
         for (Transaction transaction : transactions) {
+            // Checks if transaction is negative
             if (transaction.getAmount() < 0) {
                 printTransaction(transaction);
             }
@@ -205,14 +210,13 @@ public class FinancialTracker {
     }
 
     /**
-     * Method description
-     *
+     * Displays report options to prompt user
+     * Evaluates date logic and calls methods to display reports
      */
     private static void reportsMenu(Scanner scanner) {
         boolean isRunning = true;
         while (isRunning) {
             System.out.println(GREEN + "\nFinancial Reports" + RESET);
-            System.out.println("Choose an option:");
             System.out.println("1) Month To Date");
             System.out.println("2) Previous Month");
             System.out.println("3) Year To Date");
@@ -220,6 +224,7 @@ public class FinancialTracker {
             System.out.println("5) Search by Vendor");
             System.out.println("6) Custom Search");
             System.out.println("0) Back");
+            System.out.print(WHITE + "Choose an option: " + RESET);
 
             String input = scanner.nextLine().trim();
 
@@ -250,7 +255,7 @@ public class FinancialTracker {
                         System.out.print("\nEnter vendor name to filter transactions by vendor: ");
                         vendor = scanner.nextLine();
                         if (vendor.isEmpty()) {
-                            System.out.println("\nVendor name cannot be empty.");
+                            System.out.println(RED + "\nVendor name cannot be empty." + RESET);
                             continue;
                         }
                         break;
@@ -259,34 +264,37 @@ public class FinancialTracker {
                 }
                 case "6" -> customSearch(scanner);
                 case "0" -> isRunning = false;
-                default -> System.out.println("Invalid option");
+                default -> System.out.println(RED + "\nInvalid option" + RESET);
             }
         }
     }
 
     /**
-     * Method description
-     *
+     * Filters transactions based on provided date range
+     * Displays only transactions that meet the condition
      */
     private static void filterTransactionsByDate(LocalDate start, LocalDate end, String displayType) {
         if (transactions.isEmpty()) {
-            System.out.println("Report is currently empty.");
+            System.out.println(RED + "\nReport is currently empty." + RESET);
             return;
         }
 
         sortTransactions();
 
+        // Displays different headings based on parameter
         switch (displayType.toLowerCase()) {
-            case "month-to-date" -> System.out.printf("%50s%n%n", "--Month To Date Report--");
-            case "previous-month" -> System.out.printf("%50s%n%n", "--Previous Month Report--");
-            case "year-to-date" -> System.out.printf("%50s%n%n", "--Year To Date Report--");
-            default -> System.out.printf("%50s%n%n", "--Previous Year Report--");
+            case "month-to-date" -> System.out.printf(GREEN + "%n%55s%n%n" + RESET, "--Month To Date Report--");
+            case "previous-month" -> System.out.printf(GREEN + "%n%55s%n%n" + RESET, "--Previous Month Report--");
+            case "year-to-date" -> System.out.printf(GREEN + "%n%55s%n%n" + RESET, "--Year To Date Report--");
+            default -> System.out.printf(GREEN + "%n%55s%n%n" + RESET, "--Previous Year Report--");
         }
 
         System.out.printf("%-10s | %-8s | %-30s | %-20s | %10s%n",
                 "Date", "Time", "Description", "Vendor", "Amount");
         System.out.println("-".repeat(90));
 
+        // Checks if dates are within valid range
+        // and displays transactions within the given range
         boolean isFound = false;
         for (Transaction transaction : transactions) {
             LocalDate date = transaction.getDate();
@@ -296,23 +304,25 @@ public class FinancialTracker {
             }
         }
         if (!isFound) {
-            System.out.println("No transactions found in this date range.");
+            System.out.println(RED + "No transactions found in this date range." + RESET);
         }
+        System.out.println();
     }
 
     /**
-     * Method description
-     *
+     * Filters transactions based on provided vendor
+     * Displays only transactions that meet the condition
      */
     private static void filterTransactionsByVendor(String vendor) {
         if (transactions.isEmpty()) {
-            System.out.println("No transactions available.");
+            System.out.println(RED + "\nReport is currently empty." + RESET);
             return;
         }
 
         sortTransactions();
-        displayLedgerTable("--Transactions by Vendor--");
+        displayLedgerTable(GREEN + "--Transactions by Vendor--" + RESET);
 
+        // Checks if vendor in each transaction matches vendor in method parameter
         boolean isFound = false;
         for (Transaction transaction : transactions) {
             if (transaction.getVendor().equalsIgnoreCase(vendor)) {
@@ -321,21 +331,22 @@ public class FinancialTracker {
             }
         }
         if (!isFound) {
-            System.out.println("No transactions found for vendor: " + vendor);
+            System.out.println(RED + "No transactions found for vendor: " + vendor + RESET);
         }
+        System.out.println();
     }
 
     /**
-     * Method description
-     *
+     * Prompts user for desired filter or choice to skip that filter
+     * Assumes all filters are chosen and eliminates each filter if field is left empty or doesn't match transaction values
      */
     private static void customSearch(Scanner scanner) {
-        // Input validation and re-prompt user
         if (transactions.isEmpty()) {
-            System.out.println("No transactions available.");
+            System.out.println(RED + "\nReport is currently empty." + RESET);
             return;
         }
 
+        // Prompts user for start date, parses string, and validates input (range and format)
         LocalDate start = null, end = null;
         while (true) {
             System.out.print("\nEnter start date (yyyy-MM-dd) or leave blank: ");
@@ -345,15 +356,16 @@ public class FinancialTracker {
             }
             try {
                 start = LocalDate.parse(startInput);
-                if (start.isAfter(LocalDate.now())) {
-                    System.out.println("\nStart date cannot be in the future, please enter a valid start date.");
+                if (start.isBefore(LocalDate.now().minusYears(20)) || start.isAfter(LocalDate.now().plusYears(100))) {
+                    System.out.println(RED + "\nEntered date is unrealistic, please enter a more appropriate date." + RESET);
                     continue;
                 }
                 break;
             } catch (DateTimeParseException ex) {
-                System.out.println("\nInvalid date format, please enter a valid start date.");
+                System.out.println(RED + "\nInvalid date format, please enter a valid start date." + RESET);
             }
         }
+
 
         while (true) {
             System.out.print("\nEnter end date (yyyy-MM-dd) or leave blank: ");
@@ -363,13 +375,13 @@ public class FinancialTracker {
             }
             try {
                 end = LocalDate.parse(endInput);
-                if (end.isAfter(LocalDate.now())) {
-                    System.out.println("\nEnd date cannot be in the future, please enter a valid end date.");
+                if (end.isBefore(LocalDate.now().minusYears(20)) || end.isAfter(LocalDate.now().plusYears(100))) {
+                    System.out.println(RED + "\nEntered date is unrealistic, please enter a more appropriate date." + RESET);
                     continue;
                 }
                 break;
             } catch (DateTimeParseException ex) {
-                System.out.println("\nInvalid date format, please enter a valid end date.");
+                System.out.println(RED + "\nInvalid date format, please enter a valid end date." + RESET);
             }
         }
 
@@ -379,6 +391,7 @@ public class FinancialTracker {
         System.out.print("\nEnter vendor or leave blank: ");
         String vendor = scanner.nextLine().trim();
 
+        // Prompts user for amount, parses string, and validates input
         Double amount = null;
         while (true) {
             System.out.print("\nEnter exact amount or leave blank: ");
@@ -390,15 +403,16 @@ public class FinancialTracker {
                 amount = Double.parseDouble(amtInput);
                 break;
             } catch (NumberFormatException ex) {
-                System.out.println("\nInvalid amount, please enter a valid amount.");
+                System.out.println(RED + "\nInvalid amount, please enter a valid amount." + RESET);
             }
         }
 
         sortTransactions();
-        displayLedgerTable("--Transactions by Custom Search--");
+        displayLedgerTable(GREEN + "--Transactions by Custom Search--" + RESET);
 
         boolean isFound = false;
         for (Transaction transaction : transactions) {
+            // Assumes all filters are chosen and eliminates each filter if conditions aren't met
             boolean isMatched = true;
 
             if (start != null && transaction.getDate().isBefore(start)) {
@@ -421,24 +435,26 @@ public class FinancialTracker {
                 isMatched = false;
             }
 
+            // Displays transactions based off of remaining filters
             if (isMatched) {
                 printTransaction(transaction);
                 isFound = true;
             }
         }
         if (!isFound) {
-            System.out.println("No transactions found for the given filters");
+            System.out.println(RED + "No transactions found for the given filters" + RESET);
         }
     }
 
     /**
-     * Method description
-     *
+     * Prompts user for transactions details to store a new payment or deposit based on parameter transactionType
+     * Amounts for payment transactions are converted to negative before storing and writing to file
      */
     private static void addTransaction(Scanner scanner, boolean isPayment, String transactionType) {
         try {
             BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_NAME, true));
 
+            // Prompts user for date and time, parses values, and validates input (range and format)
             LocalDate date;
             LocalTime time;
             while (true) {
@@ -457,13 +473,13 @@ public class FinancialTracker {
                     date = LocalDate.parse(dateTimeParts[0]);
                     time = LocalTime.parse(dateTimeParts[1]);
 
-                    if (date.isAfter(LocalDate.now())) {
-                        System.out.println("\nScheduling transactions is not a feature yet, please enter a valid date.");
+                    if (date.isBefore(LocalDate.now().minusYears(20)) || date.isAfter(LocalDate.now().plusYears(100))) {
+                        System.out.println(RED + "\nEntered date is unrealistic, please enter a more appropriate date." + RESET);
                         continue;
                     }
                     break;
                 } catch (Exception ex) {
-                    System.out.println("\nInvalid date/time format. Please use yyyy-MM-dd HH:mm:ss.");
+                    System.out.println(RED + "\nInvalid date/time format. Please use yyyy-MM-dd HH:mm:ss." + RESET);
                 }
             }
 
@@ -472,7 +488,7 @@ public class FinancialTracker {
                 System.out.print("\nEnter " + transactionType + " description: ");
                 description = scanner.nextLine().trim();
                 if (description.isEmpty()) {
-                    System.out.println("\nDescription cannot be empty.");
+                    System.out.println(RED + "\nDescription cannot be empty." + RESET);
                     continue;
                 }
                 break;
@@ -483,12 +499,14 @@ public class FinancialTracker {
                 System.out.print("\nEnter " + transactionType + " vendor: ");
                 vendor = scanner.nextLine().trim();
                 if (vendor.isEmpty()) {
-                    System.out.println("\nVendor cannot be empty.");
+                    System.out.println(RED + "\nVendor cannot be empty." + RESET);
                     continue;
                 }
                 break;
             }
 
+            // Prompts user for amount, parses value, and validates input
+            // Converts amount to negative if entered as a payment
             double amount;
             while (true) {
                 System.out.print("\nEnter " + transactionType + " amount: ");
@@ -497,32 +515,32 @@ public class FinancialTracker {
                 try {
                     amount = Double.parseDouble(amountInput);
                     if (amount <= 0) {
-                        System.out.println("\nEntered " + transactionType + " amounts must be greater than $0.");
+                        System.out.println(RED + "\nEntered " + transactionType + " amounts must be greater than $0." + RESET);
                         continue;
                     }
                     break;
                 } catch (Exception ex) {
-                    System.out.println("\nInvalid input, please enter a valid amount.");
+                    System.out.println(RED + "\nInvalid input, please enter a valid amount." + RESET);
                 }
             }
             if (isPayment) {
                 amount = -amount;
             }
 
+            // Stores and writes transaction to file
             transactions.add(new Transaction(date, time, description, vendor, amount));
             writer.write(date.format(DATE_FMT) + "|" + time.format(TIME_FMT) + "|" + description + "|" + vendor + "|" + amount + "\n");
             writer.close();
 
-            System.out.println("\nYou have successfully added your " + transactionType + ".");
+            System.out.println(BLUE + "\nYou have successfully added your " + transactionType + "." + RESET);
 
         } catch (IOException ex) {
-            System.out.println("\nError writing to file.");
+            System.out.println(RED + "\nError writing to file." + RESET);
         }
     }
 
     /**
-     * Method description
-     *
+     * Helper method to iterate through and print transactions in arraylist
      */
     private static void printTransaction(Transaction transaction) {
         System.out.printf("%-10s | %-7s | %-30s | %-20s | %10.2f%n",
@@ -534,19 +552,17 @@ public class FinancialTracker {
     }
 
     /**
-     * Method description
-     *
+     * Helper method to format and print ledger table
      */
     private static void displayLedgerTable(String title) {
-        System.out.printf("%n%50s%n%n", title);
+        System.out.printf("%n%60s%n%n", title);
         System.out.printf("%-10s | %-8s | %-30s | %-20s | %10s%n",
                 "Date", "Time", "Description", "Vendor", "Amount");
         System.out.println("-".repeat(90));
     }
 
     /**
-     * Method description
-     *
+     * Helper method to sort transactions in descending order
      */
     private static void sortTransactions() {
         transactions.sort(Comparator.comparing(Transaction::getDate)
